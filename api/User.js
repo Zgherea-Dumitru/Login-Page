@@ -56,7 +56,10 @@ router.post('/signup', async (req, res) => {
                     }
                 } catch (err) {
                     console.log(err);
-                    res.status(500).send("Database erroe");
+                    res.status(403).json({
+                        status: "FAILED",
+                        message: "An error occurred while saving user account!"
+                    })
                 }
             }
         } catch (err) {
@@ -70,8 +73,49 @@ router.post('/signup', async (req, res) => {
 })
 
 // Sign in
-router.post('/signin', (req, res) => {
+router.post('/signin', async (req, res) => {
+    let { password, email } = req.body;
+    email = email.trim();
+    password = password.trim();
 
+    if (email == "" || password == "") {
+        res.json({
+            status: "FAILED",
+            message: "Empty credentials suplied!"
+        })
+    } else {
+        try {
+            const existEmail = await findEmail(email);
+            if (existEmail.length) {
+                // An user exists
+                const hashedPassword = existEmail[0].password;
+                const goodPassword = await bcrypt.compare(password, hashedPassword);
+
+                if (goodPassword) {
+                    res.json({
+                        status: "SUCCES",
+                        message: "Sign In succesful!"
+                    })
+                } else {
+                    res.json({
+                        status: "FAILED",
+                        message: "Wrong credentials!"
+                    })
+                }
+            } else {
+                res.json({
+                    status: "FAILED",
+                    message: "Wrong credentials!"
+                })
+            }
+        } catch (err) {
+            console.log(err);
+            res.json({
+                status: "FAILED",
+                message: "Error connecting an user!"
+            })
+        }
+    }
 })
 
 module.exports = router;

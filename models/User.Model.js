@@ -10,7 +10,7 @@ const createUser = async (firstname, lastname, password, email) => {
 
 const findEmail = async (email) => {
     try {
-        const result = await db.query("SELECT email FROM users WHERE email = ?", [email]);
+        const result = await db.query("SELECT * FROM users WHERE email = ?", [email]);
         return result[0];
     } catch (err) {
         console.log(err);
